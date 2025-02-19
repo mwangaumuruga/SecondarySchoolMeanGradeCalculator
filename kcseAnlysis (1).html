@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mean Grade Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            padding: 10px;
+        }
+
+        h1, h2 {
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        form {
+            max-width: 90%;
+            width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result, #deviationResult {
+            margin-top: 20px;
+            font-size: 1em;
+            color: #333;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 16px;
+            }
+
+            form {
+                padding: 15px;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Mean Grade Calculator</h1>
+    <form id="gradeForm" onsubmit="return false;">
+        <label for="numEntries">Number of Entries:</label>
+        <input type="number" id="numEntries" required autofocus onkeydown="handleKeyPress(event, 'gradeA')">
+
+        <label>Enter Number of Grades:</label>
+        <div id="gradeInputs">
+            <label>A: <input type="number" id="gradeA" value="0" required onkeydown="handleKeyPress(event, 'gradeAminus')"></label>
+            <label>A-: <input type="number" id="gradeAminus" value="0" required onkeydown="handleKeyPress(event, 'gradeBplus')"></label>
+            <label>B+: <input type="number" id="gradeBplus" value="0" required onkeydown="handleKeyPress(event, 'gradeB')"></label>
+            <label>B: <input type="number" id="gradeB" value="0" required onkeydown="handleKeyPress(event, 'gradeBminus')"></label>
+            <label>B-: <input type="number" id="gradeBminus" value="0" required onkeydown="handleKeyPress(event, 'gradeCplus')"></label>
+            <label>C+: <input type="number" id="gradeCplus" value="0" required onkeydown="handleKeyPress(event, 'gradeC')"></label>
+            <label>C: <input type="number" id="gradeC" value="0" required onkeydown="handleKeyPress(event, 'gradeCminus')"></label>
+            <label>C-: <input type="number" id="gradeCminus" value="0" required onkeydown="handleKeyPress(event, 'gradeDplus')"></label>
+            <label>D+: <input type="number" id="gradeDplus" value="0" required onkeydown="handleKeyPress(event, 'gradeD')"></label>
+            <label>D: <input type="number" id="gradeD" value="0" required onkeydown="handleKeyPress(event, 'gradeDminus')"></label>
+            <label>D-: <input type="number" id="gradeDminus" value="0" required onkeydown="handleKeyPress(event, 'gradeE')"></label>
+            <label>E: <input type="number" id="gradeE" value="0" required onkeydown="handleKeyPress(event, 'calculateMeanButton')"></label>
+        </div>
+
+        <button type="button" id="calculateMeanButton" onclick="calculateMean()">Calculate Mean</button>
+        <button type="button" onclick="resetForm()">Reset</button>
+
+        <label for="prevMean">Previous Year's Mean:</label>
+        <input type="number" id="prevMean" step="0.0001" value="0" required>
+        <button type="button" onclick="calculateDeviation()">Calculate Deviation</button>
+    </form>
+
+    <h2>Results</h2>
+    <p id="result"></p>
+    <p id="deviationResult"></p>
+
+    <script>
+        const gradePoints = {
+            'A': 12, 'A-': 11, 'B+': 10, 'B': 9,
+            'B-': 8, 'C+': 7, 'C': 6, 'C-': 5,
+            'D+': 4, 'D': 3, 'D-': 2, 'E': 1
+        };
+
+        let currentMean = 0;
+
+        function calculateMean() {
+            const numEntries = parseInt(document.getElementById("numEntries").value);
+            if (numEntries <= 0) {
+                document.getElementById("result").innerText = "Please enter a valid number of entries.";
+                return;
+            }
+
+            let totalPoints = 0;
+            let totalGrades = 0;
+
+            for (let grade in gradePoints) {
+                const gradeInputId = `grade${grade.replace('+', 'plus').replace('-', 'minus')}`;
+                const count = parseInt(document.getElementById(gradeInputId).value);
+
+                if (count >= 0) {
+                    totalPoints += gradePoints[grade] * count;
+                    totalGrades += count;
+                } else {
+                    document.getElementById("result").innerText = `Invalid count for grade ${grade}. Please enter a non-negative number.`;
+                    return;
+                }
+            }
+
+            if (totalGrades !== numEntries) {
+                document.getElementById("result").innerText = `Total grades (${totalGrades}) do not match the number of entries (${numEntries}). Please correct your inputs.`;
+                return;
+            }
+
+            currentMean = totalPoints / numEntries;
+            document.getElementById("result").innerText = `Mean Grade Points: ${currentMean.toFixed(4)}`;
+        }
+
+        function calculateDeviation() {
+            const prevMean = parseFloat(document.getElementById("prevMean").value);
+            if (isNaN(prevMean)) {
+                document.getElementById("deviationResult").innerText = "Please enter a valid previous year's mean.";
+                return;
+            }
+
+            const deviation = currentMean - prevMean;
+            document.getElementById("deviationResult").innerText = `Deviation: ${deviation.toFixed(4)}`;
+        }
+
+        function handleKeyPress(event, nextElementId) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById(nextElementId).focus();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("gradeForm").reset();
+            document.getElementById("result").innerText = '';
+            document.getElementById("deviationResult").innerText = '';
+            document.getElementById("numEntries").focus();
+        }
+    </script>
+</body>
+</html>
+
